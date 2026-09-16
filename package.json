@@ -1,9 +1,9 @@
 {
   "name": "clockify-axi",
   "version": "0.1.0",
-  "description": "AXI-compliant wrapper around the Clockify MCP server - TOON output, cached workspace/user identity, exit codes you can gate on",
+  "description": "AXI-compliant wrapper around Clockify's REST API - TOON output, cached workspace/user identity, exit codes you can gate on",
   "type": "module",
-  "keywords": ["clockify", "cli", "agent", "axi", "toon", "mcp", "time-tracking"],
+  "keywords": ["clockify", "cli", "agent", "axi", "toon", "rest", "time-tracking"],
   "license": "MIT",
   "repository": { "type": "git", "url": "git+https://github.com/elliottkan/clockify-axi.git" },
   "homepage": "https://github.com/elliottkan/clockify-axi#readme",
