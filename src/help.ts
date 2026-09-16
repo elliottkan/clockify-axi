@@ -1,11 +1,10 @@
-export const TOP_LEVEL_HELP = `clockify-axi - Clockify MCP for agents (AXI)
+export const TOP_LEVEL_HELP = `clockify-axi - Clockify's REST API for agents (AXI)
 
 Run with no arguments for the home view: the cached identity and suggested
 next steps.
 
-commands[9]{command,what}:
+commands[8]{command,what}:
   whoami,Show the cached user/workspace identity
-  now,Print the current date and time
   timer,Check, start, or stop the running timer
   log,Log a completed (past) time entry
   report,Fetch summary or detailed time tracking reports
@@ -27,13 +26,14 @@ Examples:
   clockify-axi log 2026-09-15T09:00:00Z 2026-09-15T10:30:00Z Client call
 
 Notes:
-  workspaceId and userId are resolved once from \`get_current_user_profile\`
-  and cached; every other command uses the cache automatically. Run
+  workspaceId and userId are resolved once from \`GET /user\` and cached;
+  every other command uses the cache automatically. Run
   \`clockify-axi whoami --refresh\` after switching workspaces in Clockify.
 
 Exit codes:
   0 success  1 error  2 usage error
 
 Env:
-  CLOCKIFY_API_KEY    Required. Clockify → Preferences → Advanced → Manage API keys
-  CLOCKIFY_MCP_URL    Override the MCP endpoint (default: https://api.clockify.me/mcp-server/mcp)`;
+  CLOCKIFY_API_KEY          Required. Clockify → Preferences → Advanced → Manage API keys
+  CLOCKIFY_API_BASE         Override the REST API base (default: https://api.clockify.me/api/v1)
+  CLOCKIFY_REPORTS_API_BASE Override the Reports API base (default: https://reports.api.clockify.me/v1)`;

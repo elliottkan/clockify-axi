@@ -1,7 +1,6 @@
-import { AxiError } from "axi-sdk-js";
 import { usageError } from "../usage.js";
 import { many, one, parseFlags } from "../flags.js";
-import { callTool } from "../mcp.js";
+import { post } from "../rest.js";
 import { getIdentity } from "../identity.js";
 
 export const LOG_HELP = `clockify-axi log <start> <end> <description> [flags]
@@ -37,8 +36,7 @@ export async function logCommand(args: string[]): Promise<Record<string, unknown
 
   const identity = await getIdentity();
   const tagIds = many(flags, "tag");
-  const { text, isError } = await callTool("log_past_time", {
-    workspaceId: identity.workspaceId,
+  const logged = await post(`/workspaces/${identity.workspaceId}/time-entries`, {
     start,
     end,
     description,
@@ -47,7 +45,6 @@ export async function logCommand(args: string[]): Promise<Record<string, unknown
     ...(tagIds ? { tagIds } : {}),
     ...(flags.booleans.has("billable") ? { billable: true } : {}),
   });
-  if (isError) throw new AxiError(text.trim() || "could not log the time entry", "log_failed");
 
-  return { logged: { start, end, description }, help: ["clockify-axi report detail --range THIS_WEEK"] };
+  return { logged, help: ["clockify-axi report detail --range THIS_WEEK"] };
 }

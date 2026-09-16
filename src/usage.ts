@@ -8,10 +8,3 @@ import { AxiError } from "axi-sdk-js";
 export function usageError(message: string, suggestions: string[] = []): AxiError {
   return new AxiError(message, "VALIDATION_ERROR", suggestions);
 }
-
-/** Rejects leftover arguments on commands that take none. */
-export function expectNoArgs(command: string, args: string[]): void {
-  if (args.length > 0) {
-    throw usageError(`${command} takes no arguments, got "${args.join(" ")}"`, [`Run \`clockify-axi ${command}\``]);
-  }
-}

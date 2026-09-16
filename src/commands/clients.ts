@@ -1,7 +1,6 @@
-import { AxiError } from "axi-sdk-js";
 import { usageError } from "../usage.js";
-import { one, parseFlags } from "../flags.js";
-import { callTool } from "../mcp.js";
+import { parseFlags } from "../flags.js";
+import { get } from "../rest.js";
 import { getIdentity } from "../identity.js";
 
 export const CLIENTS_HELP = `clockify-axi clients list [query]
@@ -17,18 +16,10 @@ async function listCommand(args: string[]): Promise<Record<string, unknown>> {
   const name = flags.positionals.join(" ").trim();
   const identity = await getIdentity();
 
-  const { text, isError } = await callTool("list_clients", {
-    workspaceId: identity.workspaceId,
+  const clients = (await get(`/workspaces/${identity.workspaceId}/clients`, {
     ...(name ? { name } : {}),
-  });
-  if (isError) throw new AxiError(text.trim() || "could not list clients", "clients_list_failed");
+  })) as Array<{ id: string; name: string }>;
 
-  let clients: Array<{ id: string; name: string }>;
-  try {
-    clients = JSON.parse(text);
-  } catch {
-    return { count: 0, clients: "none", raw: text.trim() };
-  }
   if (!Array.isArray(clients) || clients.length === 0) return { count: 0, clients: "none" };
   return { count: clients.length, clients };
 }

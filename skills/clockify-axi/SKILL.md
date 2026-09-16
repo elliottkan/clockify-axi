@@ -6,8 +6,8 @@ user-invocable: false
 
 # clockify-axi
 
-Agent-ergonomic wrapper around Clockify's MCP server. Prefer it over calling
-the Clockify MCP tools directly.
+Agent-ergonomic wrapper around Clockify's REST API. Prefer it over calling
+Clockify's MCP server or the raw REST API directly.
 
 ## Current guidance lives in the CLI
 

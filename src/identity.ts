@@ -1,13 +1,14 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
-import { callTool } from "./mcp.js";
 import { AxiError } from "axi-sdk-js";
+import { get } from "./rest.js";
 
 export interface Identity {
   userId: string;
   workspaceId: string;
   timeZone?: string;
+  weekStart?: string;
   workspaces?: Array<{ id: string; name: string }>;
   updatedAt: string;
 }
@@ -40,10 +41,10 @@ function writeCache(identity: Identity): void {
 }
 
 /**
- * `get_current_user_profile` is the only Clockify tool that needs no IDs, and
- * every other tool requires `workspaceId` (most also require `userId`). We
- * fetch it once and cache it, so commands never make an agent pass the same
- * two IDs on every invocation.
+ * `GET /user` is the only endpoint that needs no IDs, and every other
+ * endpoint requires `workspaceId` (most also `userId`). Fetch it once and
+ * cache it, along with `weekStart` so date-range math (THIS_WEEK etc.)
+ * matches the user's real Clockify settings instead of guessing Monday.
  */
 export async function getIdentity(refresh = false): Promise<Identity> {
   if (!refresh) {
@@ -51,26 +52,32 @@ export async function getIdentity(refresh = false): Promise<Identity> {
     if (cached) return cached;
   }
 
-  const { text, isError } = await callTool("get_current_user_profile", {});
-  if (isError) throw new AxiError(text.trim() || "could not load the Clockify user profile", "profile_failed");
+  const profile = (await get("/user")) as {
+    id?: string;
+    activeWorkspace?: string;
+    defaultWorkspace?: string;
+    settings?: { timeZone?: string; weekStart?: string };
+  };
 
-  let parsed: { userId?: string; activeWorkspace?: string; defaultWorkspace?: string; timeZone?: string; workspaces?: Array<{ id: string; name: string }> };
-  try {
-    parsed = JSON.parse(text);
-  } catch {
-    throw new AxiError(`Unexpected profile response: ${text.slice(0, 200)}`, "profile_unparseable");
-  }
-
-  const workspaceId = parsed.activeWorkspace ?? parsed.defaultWorkspace;
-  if (!parsed.userId || !workspaceId) {
+  const workspaceId = profile.activeWorkspace ?? profile.defaultWorkspace;
+  if (!profile.id || !workspaceId) {
     throw new AxiError("Clockify profile response is missing userId or workspace", "profile_incomplete");
   }
 
+  let workspaces: Array<{ id: string; name: string }> | undefined;
+  try {
+    const list = (await get("/workspaces")) as Array<{ id: string; name: string }>;
+    if (Array.isArray(list)) workspaces = list.map((w) => ({ id: w.id, name: w.name }));
+  } catch {
+    // not fatal - whoami still works without the full workspace list
+  }
+
   const identity: Identity = {
-    userId: parsed.userId,
+    userId: profile.id,
     workspaceId,
-    timeZone: parsed.timeZone,
-    workspaces: parsed.workspaces,
+    timeZone: profile.settings?.timeZone,
+    weekStart: profile.settings?.weekStart,
+    workspaces,
     updatedAt: new Date().toISOString(),
   };
   writeCache(identity);

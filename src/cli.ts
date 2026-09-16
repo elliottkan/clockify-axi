@@ -1,4 +1,4 @@
-import { installSessionStartHooks, runAxiCli, AxiError } from "axi-sdk-js";
+import { installSessionStartHooks, runAxiCli } from "axi-sdk-js";
 import { CLIENTS_HELP, clientsCommand } from "./commands/clients.js";
 import { LOG_HELP, logCommand } from "./commands/log.js";
 import { PROJECTS_HELP, projectsCommand } from "./commands/projects.js";
@@ -9,26 +9,15 @@ import { TIMER_HELP, timerCommand } from "./commands/timer.js";
 import { WHOAMI_HELP, whoamiCommand } from "./commands/whoami.js";
 import { TOP_LEVEL_HELP } from "./help.js";
 import { getIdentity } from "./identity.js";
-import { callTool } from "./mcp.js";
-import { expectNoArgs, usageError } from "./usage.js";
+import { usageError } from "./usage.js";
 import { VERSION } from "./version.js";
 
 const DESCRIPTION = "Track time, run reports, and manage Clockify projects for agents";
-
-const NOW_HELP = `clockify-axi now
-
-Print the current date and time in ISO format, as Clockify's server sees it.`;
 
 const SETUP_HELP = `clockify-axi setup hooks
 
 Install a SessionStart hook for Claude Code, Codex and OpenCode so every agent
 session starts with clockify-axi's commands in context.`;
-
-async function nowOutput(): Promise<Record<string, unknown>> {
-  const { text, isError } = await callTool("get_current_time", {});
-  if (isError) throw new AxiError(text.trim() || "could not read the current time", "now_failed");
-  return { now: text.trim() };
-}
 
 async function homeOutput(): Promise<Record<string, unknown>> {
   let identity: Awaited<ReturnType<typeof getIdentity>> | undefined;
@@ -51,7 +40,6 @@ async function homeOutput(): Promise<Record<string, unknown>> {
 
 const COMMAND_HELP: Record<string, string> = {
   whoami: WHOAMI_HELP,
-  now: NOW_HELP,
   timer: TIMER_HELP,
   log: LOG_HELP,
   report: REPORT_HELP,
@@ -72,10 +60,6 @@ export async function main(argv: string[] = process.argv.slice(2)): Promise<void
     home: () => homeOutput(),
     commands: {
       whoami: (args) => whoamiCommand(args),
-      now: (args) => {
-        expectNoArgs("now", args);
-        return nowOutput();
-      },
       timer: (args) => timerCommand(args),
       log: (args) => logCommand(args),
       report: (args) => reportCommand(args),

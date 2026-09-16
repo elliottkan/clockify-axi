@@ -20,6 +20,7 @@ export async function whoamiCommand(args: string[]): Promise<Record<string, unkn
     userId: identity.userId,
     workspaceId: identity.workspaceId,
     timeZone: identity.timeZone ?? "",
+    weekStart: identity.weekStart ?? "",
     workspaces: (identity.workspaces ?? []).map((w) => `${w.id} (${w.name})`).join(", "),
     cached: identity.updatedAt,
     help: ["Every command below defaults --workspace and --user from this cache; pass --refresh if you switched workspaces in Clockify"],

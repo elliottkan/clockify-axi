@@ -1,12 +1,11 @@
-import { AxiError } from "axi-sdk-js";
 import { usageError } from "../usage.js";
 import { parseFlags } from "../flags.js";
-import { callTool } from "../mcp.js";
+import { get } from "../rest.js";
 import { getIdentity } from "../identity.js";
 
 export const TAGS_HELP = `clockify-axi tags list [query]
 
-Search tags by name to resolve tag IDs for \`timer start/stop --tag\` and \`log --tag\`.
+Search tags by name to resolve tag IDs for \`timer start --tag\` and \`log --tag\`.
 
 Examples:
   clockify-axi tags list
@@ -17,18 +16,10 @@ async function listCommand(args: string[]): Promise<Record<string, unknown>> {
   const name = flags.positionals.join(" ").trim();
   const identity = await getIdentity();
 
-  const { text, isError } = await callTool("list_tags", {
-    workspaceId: identity.workspaceId,
+  const tags = (await get(`/workspaces/${identity.workspaceId}/tags`, {
     ...(name ? { name } : {}),
-  });
-  if (isError) throw new AxiError(text.trim() || "could not list tags", "tags_list_failed");
+  })) as Array<{ id: string; name: string }>;
 
-  let tags: Array<{ id: string; name: string }>;
-  try {
-    tags = JSON.parse(text);
-  } catch {
-    return { count: 0, tags: "none", raw: text.trim() };
-  }
   if (!Array.isArray(tags) || tags.length === 0) return { count: 0, tags: "none" };
   return { count: tags.length, tags };
 }
