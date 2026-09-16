@@ -3,14 +3,14 @@ export const TOP_LEVEL_HELP = `clockify-axi - Clockify's REST API for agents (AX
 Run with no arguments for the home view: the cached identity and suggested
 next steps.
 
-commands[8]{command,what}:
+commands[10]{command,what}:
   whoami,Show the cached user/workspace identity
   timer,Check, start, or stop the running timer
   log,Log a completed (past) time entry
   report,Fetch summary or detailed time tracking reports
   clients,Search clients
   projects,Search or create projects
-  tasks,Search tasks within a project
+  tasks,Search or create tasks within a project
   tags,Search tags
   setup,Install SessionStart hooks for Claude Code, Codex and OpenCode
   update,Self-update to the latest release
